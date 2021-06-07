@@ -30,7 +30,7 @@
                         jsonCache.modifier ??= m;
                         jsonCache.noun ??= n;
                         document.getElementById("purgecache").disabled = false;
-                        document.getElementById("gen").value = `${selectRandom(m)} ${selectRandom(n)}`;
+                        document.getElementById("gen").value = `${selectRandom(m)}-${selectRandom(n)}`;
                     })
                     .catch(console.error);
             });
@@ -44,7 +44,7 @@
 </head>
 <body>
 <label>
-    <input type="text" readonly id="gen">
+    <input type="text" readonly id="gen" placeholder="Click [New Item] to get one...">
     <input type="button" value="New Item" id="new">
     <input type="button" value="Purge cache" id="purgecache" disabled>
 </label>

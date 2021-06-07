@@ -10,27 +10,39 @@
             const i = Math.random() * (a.length - 1) | 0;
             console.debug(i);
             return a[i];
-        }
+        };
 
-        const getModifierJSON = () => fetch("https://raw.githubusercontent.com/KisaragiEffective/random-name-generator/v1.0/data/modifier.json")
+        const types = {
+            expectArray(x) {
+                return Array.isArray(x) ? x : (() => { throw new TypeError("Response isn't an array"); } )();
+            }
+        };
+
+        const getModifierJSON = () => fetch("https://raw.githubusercontent.com/KisaragiEffective/random-name-generator/master/data/modifier.json")
             .then(x => x.json())
-            .then(x => Array.isArray(x) ? x : (() => { throw new TypeError("Response isn't an array"); } )());
+            .then(types.expectArray);
 
-        const getNounJson = () => fetch("https://raw.githubusercontent.com/KisaragiEffective/random-name-generator/v1.0/data/noun.json")
+        const getNounJson = () => fetch("https://raw.githubusercontent.com/KisaragiEffective/random-name-generator/master/data/noun.json")
             .then(x => x.json())
-            .then(x => Array.isArray(x) ? x : (() => { throw new TypeError("Response isn't an array"); } )());
+            .then(types.expectArray);
 
-        const jsonCache = { modifier: undefined, noun: undefined };
+        const jsonCache = Object.seal({
+            modifier: undefined,
+            noun: undefined,
+        });
         window.addEventListener("DOMContentLoaded", () => {
-            console.log("loaded");
+            console.debug("loaded");
             document.getElementById("new").addEventListener("click", () => {
-                console.log("clicked");
-                Promise.all([getModifierJSON(), getNounJson()])
+                console.debug("clicked");
+                Promise.all([
+                    jsonCache.modifier ?? getModifierJSON(),
+                    jsonCache.noun ?? getNounJson()
+                ])
                     .then(([m, n]) => {
                         jsonCache.modifier ??= m;
                         jsonCache.noun ??= n;
                         document.getElementById("purgecache").disabled = false;
-                        document.getElementById("gen").value = `${selectRandom(m)} ${selectRandom(n)}`;
+                        document.getElementById("gen").value = `${selectRandom(m)}-${selectRandom(n)}`;
                     })
                     .catch(console.error);
             });
@@ -38,13 +50,13 @@
                 jsonCache.modifier = undefined;
                 jsonCache.noun = undefined;
                 document.getElementById("purgecache").disabled = true;
-            })
+            });
         });
     </script>
 </head>
 <body>
 <label>
-    <input type="text" readonly id="gen">
+    <input type="text" readonly id="gen" placeholder="Click [New Item] to get one...">
     <input type="button" value="New Item" id="new">
     <input type="button" value="Purge cache" id="purgecache" disabled>
 </label>

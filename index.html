@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Random Name Generator</title>
+    <script>
+        "use strict";
+        const selectRandom = (x /* @type {Iterable<any>} */) => {
+            const a = Array.isArray(x) ? x : [...x];
+            const i = Math.random() * (a.length - 1) | 0;
+            console.debug(i);
+            return a[i];
+        }
+
+        const getModifierJSON = () => fetch("https://raw.githubusercontent.com/KisaragiEffective/random-name-generator/v1.0/data/modifier.json")
+            .then(x => x.json())
+            .then(x => Array.isArray(x) ? x : (() => { throw new TypeError("Response isn't an array"); } )());
+
+        const getNounJson = () => fetch("https://raw.githubusercontent.com/KisaragiEffective/random-name-generator/v1.0/data/noun.json")
+            .then(x => x.json())
+            .then(x => Array.isArray(x) ? x : (() => { throw new TypeError("Response isn't an array"); } )());
+
+        const jsonCache = { modifier: undefined, noun: undefined };
+        window.addEventListener("DOMContentLoaded", () => {
+            console.log("loaded");
+            document.getElementById("new").addEventListener("click", () => {
+                console.log("clicked");
+                Promise.all([getModifierJSON(), getNounJson()])
+                    .then(([m, n]) => {
+                        jsonCache.modifier ??= m;
+                        jsonCache.noun ??= n;
+                        document.getElementById("purgecache").disabled = false;
+                        document.getElementById("gen").value = `${selectRandom(m)} ${selectRandom(n)}`;
+                    })
+                    .catch(console.error);
+            });
+            document.getElementById("purgecache").addEventListener("click", () => {
+                jsonCache.modifier = undefined;
+                jsonCache.noun = undefined;
+                document.getElementById("purgecache").disabled = true;
+            })
+        });
+    </script>
+</head>
+<body>
+<label>
+    <input type="text" readonly id="gen">
+    <input type="button" value="New Item" id="new">
+    <input type="button" value="Purge cache" id="purgecache" disabled>
+</label>
+</body>
+</html>
